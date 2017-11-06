@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-      <title>Bootstrap Example</title>
+      <title>Weather Or Not</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -35,9 +35,10 @@
       </div>
    </div>
    <script>
-   // Holds JSON parsed return from openWeatherMap api
+   // Holds JSON parsed return from openWeatherMap api (same variable used for current and extended forcast)
    var currentWeather;
    
+   //Recieves current forcast for input zipCode
    function loadDoc() {
       var zipCode = document.querySelector('#demoText').value;
       var xhttp = new XMLHttpRequest();
@@ -52,6 +53,7 @@
       xhttp.send();
    }
    
+   //Recieves extended forcast for input zipCode 
    function loadExtended(){
       var zipCode = document.querySelector('#demoText').value;
       var xhttp = new XMLHttpRequest();
@@ -65,6 +67,7 @@
       xhttp.send();
    }
    
+   //Populates extended forcast
    function populateExtended(){
       var demo = document.querySelector('#demo');
       demo.innerHTML = `<h2 style="text-align:center;"><b>${currentWeather.city.name}</b></h2>`;
@@ -110,7 +113,6 @@
       document.querySelector('#demoText').value = localStorage.zipCode;
       loadDoc();
    }
-   
    </script>
 </body>
 </html>
