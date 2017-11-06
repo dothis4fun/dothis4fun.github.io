@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+      <title>Bootstrap Example</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <style>
+         body {
+            background-image: url("restFulBackground.jpg");
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+         }
+         
+      </style>
+   </head>
+<body>
+   <div class="container">
+      <div class="jumbotron">
+         <h1 style="text-align:center;"><b>Weather Or Not</b></h1>
+      </div>
+      <div class="col-sm-6 col-sm-offset-3">
+         <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+               <input type="text" placeholder="ZipCode" id="demoText"/>
+               <button type="button" onclick="loadDoc()">Current Forcast</button>
+               <button type="button" onclick="loadExtended()">5 Day Forcast</button>
+            </div>
+         </div>
+         <div class="well well-lg" id="demo">
+            
+         </div>
+      </div>
+   </div>
+   <script>
+   // Holds JSON parsed return from openWeatherMap api
+   var currentWeather;
+   
+   function loadDoc() {
+      var zipCode = document.querySelector('#demoText').value;
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function() {
+         if (this.readyState == 4 && this.status == 200) {
+            currentWeather = JSON.parse(this.responseText);
+            populateEntry();
+            saveToStorage(zipCode);
+         }
+      };
+      xhttp.open("GET", `http://api.openweathermap.org/data/2.5/weather?zip=${zipCode},us&APPID=687abeb1809dee2364860077e9ce5a64`, true);
+      xhttp.send();
+   }
+   
+   function loadExtended(){
+      var zipCode = document.querySelector('#demoText').value;
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = function(){
+         if(this.readyState == 4 && this.status == 200) {
+            currentWeather = JSON.parse(this.responseText);
+            populateExtended();
+         }
+      }
+      xhttp.open("GET", `http://api.openweathermap.org/data/2.5/forecast?zip=${zipCode}&APPID=687abeb1809dee2364860077e9ce5a64`,true);
+      xhttp.send();
+   }
+   
+   function populateExtended(){
+      var demo = document.querySelector('#demo');
+      demo.innerHTML = `<h2 style="text-align:center;"><b>${currentWeather.city.name}</b></h2>`;
+      for(x in currentWeather.list){
+         var time = new Date(currentWeather.list[x].dt * 1000);
+         //if the day of currently iterated weather forcast differs from prior
+         if(x == 0 || time.getDate() != new Date(currentWeather.list[x-1].dt * 1000).getDate()){
+            //create panel group
+            demo.innerHTML += "<div class='panel panel-default'></div>";
+            //create panel Time heading
+            demo.innerHTML += `<h3><b>${time.toDateString()}</b></h3>`;
+         }
+         demo.innerHTML += `<p style="float:left;"><b>${time.toLocaleTimeString()}</b><img src='http://openweathermap.org/img/w/${currentWeather.list[x].weather[0].icon}.png' /></p>`;
+         demo.innerHTML += `<p style="float: right;"><b>Temp: </b>${Math.round((9/5) * (currentWeather.list[x].main.temp - 273) + 32)}&#176;F <b>Winds: </b>${Math.round(currentWeather.list[x].wind.speed * 2.2369)} mph <b>Clouds: </b> ${currentWeather.list[x].clouds.all}%</p>`;
+         demo.innerHTML += "<div  style='clear: both;'></div>"
+      }
+   }
+   
+   //Populates Single Forcast Entry using keys of current weather. Key documentation available at (https://openweathermap.org/current#zip)
+   function populateEntry(){
+      var demo = document.querySelector('#demo');
+      var sunriseTime = new Date(currentWeather.sys.sunrise*1000).toLocaleTimeString();
+      var sunsetTime = new Date(currentWeather.sys.sunset*1000).toLocaleTimeString();
+      demo.innerHTML = `<h2 style="text-align:center;"><b>${currentWeather.name}</b></h2>`;
+      demo.innerHTML += `<p>Current Temperature: ${Math.round((9/5) * (currentWeather.main.temp - 273) + 32)}&#176;F <img src="http://openweathermap.org/img/w/${currentWeather.weather[0].icon}.png" alt="${currentWeather.weather[0].description}" /></p>`;
+      demo.innerHTML += `<p>Sunrise: ${sunriseTime}</p>`;
+      demo.innerHTML += `<p>Sunset: ${sunsetTime}</p>`;
+      demo.innerHTML += `<p>Wind: ${Math.round(currentWeather.wind.speed * 2.2369)} mph</p>`;
+      demo.innerHTML += `<p>Clouds: ${currentWeather.clouds.all}%</p>`;
+      if (currentWeather.hasOwnProperty('rain')) {
+         demo.innerHTML += `<p>Rain fall: ${currentWeather.rain}</p>`;
+      }
+      else if (currentWeather.hasOwnProperty('snow')) {
+         demo.innerHTML += `<p>Rain fall: ${currentWeather.snow}</p>`;
+      }
+   }
+   // Save ZipCode to storage
+   function saveToStorage(zipCode){
+      localStorage.setItem("zipCode",zipCode);
+   }
+   // If returning user, use last entered zipCode to populate entry
+   if(localStorage.zipCode != undefined){
+      document.querySelector('#demoText').value = localStorage.zipCode;
+      loadDoc();
+   }
+   
+   </script>
+</body>
+</html>
